@@ -1,62 +1,48 @@
-//import * as e from './enums.js'
-/****************************************************
-*Configuragble settings for the clock               *
-*****************************************************/
-var canvas = document.getElementById("myCanvas");
-var context = canvas.getContext("2d");
-
-//canvas size properies
-canvas.height = 500;
-canvas.width = 500;
-
-/*other configurable elemements of the canvas
-canvas.style.left = "200px";
-canvas.style.top = "200px";
-canvas.style.position = "absolute";
-*/
-
 /****************************************************
 *The main configurable elements of the clock        *
 /****************************************************/
-const CONFIG = {
-  //choose which hands to display
-  hands: {
-    ms: true,
-    s: true,
-    min: true,
-    hr: true},
-  c: canvas,
-  ctx: context,
+  /****************************************************
+  *Canvas attributes                                  *
+  *****************************************************/
+  //assign an ID value to the canvas
+  const CANVASID = 'myCanvas';
+  //Clock height and width are relative to the canvas height and width
+  const HEIGHT = 400;
+  const WIDTH = HEIGHT// alternate example: 400
+  //the .style.left property of the canvas element
+  const LEFT_POSITION = "300px";
+  //the .style.top property of the canvas element
+  const TOP_POSITION = "30px";
+  //the .style.position property of the canvas element
+  const POS_TYPE = "absolute"; //"static|absolute|fixed|relative|sticky|initial|inherit"
+  //frames per second
+  const FPS = 48;
+
+  /****************************************************
+  *Clock hand display attributes                      *
+  *****************************************************/
+  //Choose 1=true to display the ms, s, min, or hr hands or 0=false to hide them
+  const MS = 1;
+  const S = 1;
+  const MIN = 1;
+  const HR = 1;
   //Modify the characters displayed on the clock face
-  //.DIGITS_12 | .DIGITS_4 | .ROMANS
-  numeralType: numberEnum.DIGITS_12,
+  const NUMERALTYPE = numberEnum.DIGITS_12;//DIGITS_12 =1 | .DIGITS_4 = 2| .ROMANS = 3
   //Modify the movement of the second hand
-  //.tick | .continuous
-  clockType: clockTickEnum.continuous,
-  //Clock's circle focus position
-  focus: 200,
-  //size of the clock
-  radius: 150,
-  //enter the number of frames
-  fps: 48,
-  //stylistic features of the clock
-  faceBackGroundColor: "darkBlue",
-  textColor: "lightBlue",
-  textFont: "px arial",
-  msHandColor: "red",
-  msHandBorderColer: "black",
-  handColor: "lightBlue",
-  handBorderColor: "darkBlue",
-  //clock frame stylistic properties
-  innerFrameOffset: 0.95,
-  outerFrameOffset: 1.05,
-  //a color for each gradient within the clock's frame
-  gradientColor_1: 'Blue',
-  gradientColor_2: 'lightBlue',
-  gradientColor_3: 'Blue',
-  //A value between 0.0 and 1.0 that represents the position between start and
-  //end in a gradient
-  gradientPos_1: .3,
-  gradientPos_2: 1,
-  gradientPos_3: 1
-}
+  const CLOCKTYPE = 0;//0 for continuous or 1 for tick
+
+  /****************************************************
+  *Clock face attributes                              *
+  *****************************************************/
+  const FACE = new Face(
+                        this._backGroundColor ="lightBlue",
+                        this._textColor = "yellow",
+                        this._textBorderColor = "white",
+                        this._textFont = "px arial",
+                        this._msHandColor = "red",
+                        this._msHandBorderColor = "red",
+                        this._handColor = "white",
+                        this._handBorderColor = "darkBlue"
+                      );
+
+  const FRAME = new Frame();

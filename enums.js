@@ -1,11 +1,12 @@
-//These properties are not meant to be configurable
-var numberEnum = {
-  DIGITS_12: 12,
-  DIGITS_4: 4,
-  ROMANS: "numerals"
-}
+/***************************************************************************
+*DO NOT MODIFY THIS FILE                                                   *
+****************************************************************************/
+const dig12 = 1;
+const dig4 = 2;
+const numerals = 3;
 
-var clockTickEnum = {
-  continuous: "continuous",
-  tick: "tick"
+const numberEnum = {
+  DIGITS_12: dig12,
+  DIGITS_4: dig4,
+  ROMANS: numerals
 }

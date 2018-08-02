@@ -1,10 +1,11 @@
-//Use the project's CONFIG.js file to adjust the clock's settings
+//Use the project's config.js file to adjust the clock's settings
+const clock =  new Clock(FACE,FRAME);
 /****************************************************
 *Project's main function
 ****************************************************/
 function main()
 {
-  startClock();
+  clock.start();
 }
 
 //returns the interval in ms needed to refresh the frame in order
@@ -13,77 +14,13 @@ function framesRefreshRate(fps) {
   return 1000/fps;
 }
 
-//runs the clock in a continuos loop with the setInterval method
-function startClock(){
-  var lineLength = CONFIG.radius;
-  CONFIG.c.setAttribute("width",
-                        CONFIG.c.width);
-  CONFIG.c.setAttribute("height",
-                        CONFIG.c.height);
-  CONFIG.ctx.lineWidth = 3;
-  CONFIG.ctx.translate(CONFIG.focus,
-                      CONFIG.focus);
-  var date = new Date();
-
-  //repeat according to the desired frames per second
-  setInterval(function() {
-      var t = new Date();
-      CONFIG.ctx.clearRect(-150,
-                          -150,
-                          CONFIG.c.width,
-                          CONFIG.c.height);
-
-      //a group of variables that make a given point in time static
-      //and allow for a different behavior based on the type variable
-      var timestamp =  {
-        ms: t.getMilliseconds(),
-        s: t.getSeconds(),
-        mins: t.getMinutes(),
-        hrs: t.getHours(),
-        type: CONFIG.clockType
-    }
-
-    drawClock();
-    if(CONFIG.hands.ms)
-    {
-      drawHands(getRadians(timestamp,"ms"),
-                1,
-                lineLength*.95,
-                CONFIG.msHandColor,
-                CONFIG.msHandBorderColer);
-    }
-    if(CONFIG.hands.s)
-    {
-      drawHands(getRadians(timestamp,"s"),
-                2,
-                lineLength*.75,
-                CONFIG.handColor,
-                CONFIG.handBorderColor);
-    }
-    if(CONFIG.hands.min)
-    {
-      drawHands(getRadians(timestamp,"mins"),
-                5,
-                lineLength*.75,
-                CONFIG.handColor,
-                CONFIG.handBorderColor);
-    }
-      drawHands(getRadians(timestamp,"hrs"),
-                9,
-                lineLength*.65,
-                CONFIG.handColor,
-                CONFIG.handBorderColor);
-    createNums(CONFIG.numeralType,lineLength);
-  }, framesRefreshRate(CONFIG.fps));
-}
-
 //Convert the radians into an X Y position on the unit circle
 function get_XY(radians, distFromFocus)
 {
   var y = Math.sin(radians);
   var x = Math.cos(radians);
-  x!=0 ? x= (x*distFromFocus) : x = CONFIG.radius;
-  y!=0 ? y = (-y*distFromFocus) : y= CONFIG.radius;
+  x!=0 ? x= (x*distFromFocus) : x = clock.radius;
+  y!=0 ? y = (-y*distFromFocus) : y= clock.radius;
   return [x,y]
 }
 
@@ -122,25 +59,23 @@ function getRadians(ts, unit)
         radians -= offset_s + offset_ms;
       break;
     case "hrs":
+
         offset_hrs = (2*Math.PI)-((ts.hrs/12)*(2*Math.PI));
         radians += offset_hrs;
         //hours are adjusted by the combined minutes that have passed for the
         //hour, the portion of seconds that have passed for the minute, and
         //the portion of milliseconds that have passed for the second
-        if(ts.type == "tick" || ts.type == "continuous")
-        {
-          offset_mins = ((2*Math.PI)*ts.mins)/(Math.pow(60,2));
-          offset_s = ((2*Math.PI)*ts.s)/(Math.pow(60,3));
-          offset_ms = ((2*Math.PI)*ts.ms)/(1000*Math.pow(60,3));
-          radians -= offset_mins + offset_s + offset_ms;
-        }
+        offset_mins = ((2*Math.PI)*ts.mins)/(Math.pow(60,2));
+        offset_s = ((2*Math.PI)*ts.s)/(Math.pow(60,3));
+        offset_ms = ((2*Math.PI)*ts.ms)/(1000*Math.pow(60,3));
+        radians -= offset_mins + offset_s + offset_ms;
       break;
     default:
       radians = radians;
     }
     //Incremental adjustments are to be made to each of the hands based on
     //how much time has elapsed for each smaller unit of measurement
-    if (ts.type == "continuous")
+    if (ts.type == 0)
     {
       if (unit=="s") {
         //seconds are adjusted by the total amount of ms that have passed
@@ -155,16 +90,16 @@ function getRadians(ts, unit)
 function drawHands(radians, width, length,
   color="black", backGroundColor="black")
 {
-  CONFIG.ctx.beginPath();
+  clock.ctx.beginPath();
   var [x,y] = get_XY(radians,length);
 
-  //the background hand
+  //render the background hand
   renderHands(x*1.02,
               y*1.02,
               width*1.2,
               backGroundColor);
 
-  //the foreground hand
+  //render the foreground hand
   renderHands(x,
               y,
               width,
@@ -174,12 +109,12 @@ function drawHands(radians, width, length,
 //draws a line of a given width and color from a point to another point
 function renderHands(x,y,width,color)
 {
-  CONFIG.ctx.moveTo(0,0);
-  CONFIG.ctx.lineTo(x,y);
-  CONFIG.ctx.lineWidth=width;
-  CONFIG.ctx.strokeStyle = color;
-  CONFIG.ctx.stroke();
-  CONFIG.ctx.closePath();
+  clock.ctx.moveTo(0,0);
+  clock.ctx.lineTo(x,y);
+  clock.ctx.lineWidth=width;
+  clock.ctx.strokeStyle = color;
+  clock.ctx.stroke();
+  clock.ctx.closePath();
 }
 
 //convert a the digits on a clock face to roman numerals
@@ -214,55 +149,67 @@ function getRomans(num){
       return "";
   }
 }
+
+function createInnerCircle()
+{
+  clock.ctx.beginPath();
+  clock.ctx.fillStyle = clock.textColor;
+  clock.ctx.strokeStyle = clock.textBorderColor;
+  clock.ctx.arc(0,
+                0,
+                clock.radius*0.1,
+                0,
+                2*Math.PI);
+  clock.ctx.stroke();
+  clock.ctx.fill();
+}
 //Adds numbers to the clock face
 function createNums(type, length)
 {
-  CONFIG.ctx.beginPath();
-  CONFIG.ctx.font = CONFIG.radius*0.15 + CONFIG.textFont;
-  CONFIG.ctx.textBaseline="middle";
-  CONFIG.ctx.textAlign="center";
-  CONFIG.ctx.arc(0,
-                0,
-                CONFIG.radius*0.1,
-                0,
-                2*Math.PI);
-  CONFIG.ctx.fillStyle = CONFIG.textColor;
-  CONFIG.ctx.fill();
-  //console.log(type);
-    //calculate the appropriate radians for each number
-    //on the clock face. Each number is to be located at the location
-    //of each hour
-    for(var num= 1; num <= 12; num++)
+  clock.ctx.beginPath();
+  clock.ctx.font = clock.radius*0.15 + clock.textFont;
+  clock.ctx.textBaseline="middle";
+  clock.ctx.textAlign="center";
+  clock.ctx.fillStyle = clock.textColor;
+  clock.ctx.strokeStyle = clock.textBorderColor;
+  clock.ctx.stroke();
+  clock.ctx.fill();
+  //calculate the appropriate radians for each number
+  //on the clock face. Each number is to be located at the location
+  //of each hour
+  for(var num= 1; num <= 12; num++)
+  {
+    let ts = {hrs: num, mins: 0, s: 0, ms: 0};
+    if (type == numberEnum.DIGITS_12)
     {
-      let ts = {hrs: num}
-      if (type == 12)
-      {
-        drawNums(num,ts,length);
-      }
-      else if (type == "numerals")
-      {
-        var romanNumeral=getRomans(num);
-        drawNums(romanNumeral,ts,length);
-      }
-      else if (type == 4)
-      {
-        num+=2;
-        //need to reset the hrs property of the timestamp object so that
-        //the numbers appear in the correct location on the clock face
-        ts = {hrs: num}
-        drawNums(num,ts,length);
-      }
+      drawNums(num,ts,length);
     }
-  CONFIG.ctx.closePath();
+    else if (type == numberEnum.ROMANS)
+    {
+      var romanNumeral=getRomans(num);
+      drawNums(romanNumeral,ts,length);
+    }
+    else if (type == numberEnum.DIGITS_4)
+    {
+      num+=2;
+      //need to reset the hrs property of the timestamp object so that
+      //the numbers appear in the correct location on the clock face
+      let ts = {hrs: num, mins: 0, s: 0, ms: 0};
+      drawNums(num,ts,length);
+    }
+  }
+  clock.ctx.closePath();
 }
 
 //Applies a number to the clock face at a given x, y coordinate
 function drawNums(character,ts,length)
 {
-  //console.log(character);
   var radians = getRadians(ts, "hrs");
   var [x,y] = get_XY(radians,length*.85);
-  CONFIG.ctx.fillText(character.toString(),
+  clock.ctx.strokeText(character.toString(),
+                      x,
+                      y);
+  clock.ctx.fillText(character.toString(),
                       x,
                       y);
 }
@@ -270,14 +217,14 @@ function drawNums(character,ts,length)
 //Draws the circle for the clock face
 function drawClock(color)
 {
-  CONFIG.ctx.beginPath();
-  CONFIG.ctx.arc(0,
+  clock.ctx.beginPath();
+  clock.ctx.arc(0,
                 0,
-                CONFIG.radius,
+                clock.radius,
                 0,
                 2 * Math.PI);
-  CONFIG.ctx.fillStyle = CONFIG.faceBackGroundColor;
-  CONFIG.ctx.fill();
+  clock.ctx.fillStyle = clock.faceBackGroundColor;
+  clock.ctx.fill();
   drawClockFrame();
 
 }
@@ -286,21 +233,21 @@ function drawClock(color)
 function drawClockFrame()
 {
   var grad;
-  grad = CONFIG.ctx.createRadialGradient(0,
+  grad = clock.ctx.createRadialGradient(0,
                                         0,
-                                        CONFIG.radius*CONFIG.innerFrameOffset,
+                                        clock.radius*clock.innerFrameOffset,
                                         0,
                                         0,
-                                        CONFIG.radius*CONFIG.outerFrameOffset);
-  grad.addColorStop(CONFIG.gradientPos_1,
-                    CONFIG.gradientColor_1);
-  grad.addColorStop(CONFIG.gradientPos_2,
-                    CONFIG.gradientColor_2);
-  grad.addColorStop(CONFIG.gradientPos_3,
-                    CONFIG.gradientColor_3);
-  CONFIG.ctx.strokeStyle = grad;
-  CONFIG.ctx.lineWidth = CONFIG.radius*0.1;
-  CONFIG.ctx.stroke();
+                                        clock.radius*clock.outerFrameOffset);
+  grad.addColorStop(clock.gradientPos_1,
+                    clock.gradientColor_1);
+  grad.addColorStop(clock.gradientPos_2,
+                    clock.gradientColor_2);
+  grad.addColorStop(clock.gradientPos_3,
+                    clock.gradientColor_3);
+  clock.ctx.strokeStyle = grad;
+  clock.ctx.lineWidth = clock.radius*0.1;
+  clock.ctx.stroke();
 }
 
 main();
